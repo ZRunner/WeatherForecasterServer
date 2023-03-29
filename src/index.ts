@@ -1,12 +1,12 @@
-import express, { raw } from "express";
+import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import bodyParser from 'body-parser'; // json parsing
 import { is } from "typia";
-import fs from 'fs';
+import { createConnection, saveForecast } from "./database";
 
 const VERSION = require('../package.json').version; // app version
 
-dotenv.config();
 const app = express();
 const port = process.env.PORT ?? 3000;
 
@@ -20,23 +20,15 @@ app.get('/', (req, res) => {
 
 app.post('/data', (req, res) => {
   const predictions = req.body;
-  const filePath = "forecast.json"
   // check body input
   if (!is<Predictions>(predictions)) {
     return res.status(400).send("Invalid predictions format");
   }
-  let forecast = {};
-  console.log(predictions);
-  if(fs.existsSync(filePath)){
-    const rawdata = fs.readFileSync(filePath,{encoding: "utf8"});
-    forecast = JSON.parse(rawdata);
-  }
+  const db = createConnection();
 
-  forecast = {...forecast,...predictions};
-  const rawdata = JSON.stringify(forecast);
-  fs.writeFileSync(filePath,rawdata);
+  saveForecast(db,predictions);
 
-  res.send(200);
+  res.sendStatus(202);
 });
 
 
