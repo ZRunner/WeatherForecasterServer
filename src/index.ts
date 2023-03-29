@@ -27,7 +27,7 @@ app.post('/data', (req, res) => {
   const db = createConnection();
 
   saveForecast(db,predictions);
-  console.log( new Date().toISOString, predictions);
+  console.log(new Date().toISOString(), JSON.stringify(predictions));
   res.sendStatus(202);
 });
 
